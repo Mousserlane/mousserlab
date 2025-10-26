@@ -1,0 +1,23 @@
+{
+  "name": "jwks-endpoint-test",
+  "version": "1.0.0",
+  "description": "This is a test server to generate an asymmetric JWKS keys using panva's jose with a 1 hour cache and rotation. When the key rotates every 1 hour, the previous key will be moved in the cache and kept for 1 hour or until the next rotation.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "jose": "^6.1.0",
+    "knex": "^3.1.0",
+    "redis": "^5.8.3",
+    "sqlite3": "^5.1.7"
+  }
+}
