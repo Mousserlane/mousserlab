@@ -1,10 +1,10 @@
-import { calculateJwkThumbprint, exportJWK, generateKeyPair } from "jose";
+import { calculateJwkThumbprint, exportJWK, generateKeyPair, JWK } from "jose";
 
 import CacheManager from "./CacheManager";
 import { CacheableJWKSKey } from "./types";
 
 const EXPIRATION_TTL = 3600 * 1000; // expiration 1 hour for both key
-const ALG = "ES256";
+export const ALG = "ES256";
 
 class JWKSManager {
   private cacheManager = new CacheManager();
@@ -62,6 +62,20 @@ class JWKSManager {
     return { publicKey, privateKey };
   }
 
+  async getSigningKey(): Promise<{ privateKey: JWK; kid: string }> {
+    let currentKey: CacheableJWKSKey =
+      await this.cacheManager.getKey("current-key");
+
+    if (!currentKey || this.isKeyExpired(currentKey)) {
+      currentKey = await this.rotateKeys(currentKey);
+    }
+
+    return {
+      privateKey: currentKey.privateKey,
+      kid: currentKey.privateKey.kid,
+    };
+  }
+
   private isKeyExpired(key: CacheableJWKSKey): boolean {
     return Date.now() - key.timestamp > EXPIRATION_TTL;
   }
@@ -75,9 +89,13 @@ class JWKSManager {
     const publicKey = await exportJWK(jwksKeys.publicKey);
     const privateKey = await exportJWK(jwksKeys.privateKey);
 
+    const kid = await calculateJwkThumbprint(publicKey);
+
     publicKey.use = "sig";
     publicKey.alg = ALG;
-    publicKey.kid = await calculateJwkThumbprint(publicKey);
+    publicKey.kid = kid;
+
+    privateKey.kid = kid;
 
     return { publicKey, privateKey };
   }

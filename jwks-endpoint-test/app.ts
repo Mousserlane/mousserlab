@@ -1,6 +1,7 @@
 import express from "express";
 import JWKSManager from "./JWKSManager";
 import CacheManager from "./CacheManager";
+import { jwtGenerator } from "./jwtGenerator";
 
 const PORT = 5888;
 const app = express();
@@ -22,6 +23,16 @@ app.get("/jwks", async (_, res) => {
   const jwksManager = new JWKSManager();
   const jwksPub = await jwksManager.getPublicJWKSKey();
   res.json(jwksPub);
+});
+
+app.get("/generateJWT", async (_, res) => {
+  const payload = {
+    name: "YOUR NAME HERE",
+    address: "SOMEWHERE",
+  };
+
+  const jwt = await jwtGenerator(payload);
+  res.json({ jwt });
 });
 
 app.listen(PORT, () => {
